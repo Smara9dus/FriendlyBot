@@ -43,6 +43,8 @@ public class HeadlessSimple {
             "data/emma.thole.600.graphml",
             "data/emma.thole.1000.graphml",
             "data/fabruxo.graphml",
+            "data/flamespinner.graphml",
+            "data/flamespinner1.graphml",
             "data/hermanomarcosm.graphml",
             "data/lostcirclenielsmain.graphml",
             "data/rodrigo.graphml",
@@ -69,7 +71,7 @@ public class HeadlessSimple {
         setup();
 
         importData(datasets[rand.nextInt(datasets.length)]);
-        //importData(datasets[10]);
+        //importData(datasets[6]);
 
         filter();
 
@@ -236,10 +238,24 @@ public class HeadlessSimple {
         model.getProperties().putValue(PreviewProperty.SHOW_NODE_LABELS, Boolean.FALSE);
         model.getProperties().putValue(PreviewProperty.EDGE_COLOR, new EdgeColor(EdgeColor.Mode.MIXED));
         model.getProperties().putValue(PreviewProperty.EDGE_THICKNESS, 0.3f);
-        model.getProperties().putValue(PreviewProperty.BACKGROUND_COLOR, Color.BLACK);
         model.getProperties().putValue(PreviewProperty.NODE_BORDER_WIDTH, 0);
         model.getProperties().putValue(PreviewProperty.EDGE_CURVED, rand.nextBoolean());
         model.getProperties().putValue(PreviewProperty.EDGE_OPACITY, rand.nextFloat()*90 + 10);
+
+        int r = rand.nextInt(10);
+        if(r == 1) {
+            model.getProperties().putValue(PreviewProperty.NODE_OPACITY, 0);
+        } else if (r <= 3) {
+            model.getProperties().putValue(PreviewProperty.NODE_OPACITY, rand.nextFloat()*100);
+        }
+
+
+        if(rand.nextInt(10) == 1) {
+            Color c = new Color(rand.nextInt(255), rand.nextInt(255), rand.nextInt(255));
+            model.getProperties().putValue(PreviewProperty.BACKGROUND_COLOR, c);
+        } else {
+            model.getProperties().putValue(PreviewProperty.BACKGROUND_COLOR, Color.BLACK);
+        }
     }
 
     private void export() {
