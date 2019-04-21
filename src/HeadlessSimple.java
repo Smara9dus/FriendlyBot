@@ -2,11 +2,13 @@ import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
 import java.util.Random;
-import org.gephi.appearance.api.AppearanceController;
-import org.gephi.appearance.api.AppearanceModel;
-import org.gephi.appearance.api.Function;
+
+import org.gephi.appearance.api.*;
+import org.gephi.appearance.plugin.PartitionElementColorTransformer;
 import org.gephi.appearance.plugin.RankingElementColorTransformer;
 import org.gephi.appearance.plugin.RankingNodeSizeTransformer;
+import org.gephi.appearance.plugin.palette.Palette;
+import org.gephi.appearance.plugin.palette.PaletteManager;
 import org.gephi.filters.api.FilterController;
 import org.gephi.filters.api.Query;
 import org.gephi.filters.api.Range;
@@ -33,16 +35,13 @@ import org.gephi.preview.api.PreviewProperty;
 import org.gephi.preview.types.EdgeColor;
 import org.gephi.project.api.ProjectController;
 import org.gephi.project.api.Workspace;
-import org.gephi.statistics.plugin.EigenvectorCentrality;
-import org.gephi.statistics.plugin.GraphDistance;
-import org.gephi.statistics.plugin.Modularity;
-import org.gephi.statistics.plugin.PageRank;
+import org.gephi.statistics.plugin.*;
 import org.openide.util.Lookup;                     // TODO: Replace this since it is triggering warnings at runtime?
 
 
 public class HeadlessSimple {
 
-    private String[] datasets = {"data/brunduart.graphml", // TODO: Data cleanup (remove unused data, make all edges unweighted, make anonymous)
+    private String[] datasets = {"data/brunduart.graphml", // TODO: Data cleanup (remove unused data, make anonymous)
             "data/emma.thole.3.graphml",
             "data/emma.thole.600.graphml",
             "data/emma.thole.1000.graphml",
@@ -68,7 +67,7 @@ public class HeadlessSimple {
     private AppearanceController appearanceController;
     private AppearanceModel appearanceModel;
 
-    public void script() {  // TODO: Make all randomized variables arguments for each function, generated in script() and comments describing each parameter
+    public void script() {
 
         rand = new Random();
 
@@ -82,11 +81,12 @@ public class HeadlessSimple {
         layout(rand.nextInt(4));
         //layout(3);
 
-        color(rand.nextInt(4));
+        color(rand.nextInt(5));
+        //color(0);
 
-        size(0);         // TODO: randomize size method option
+        size(rand.nextInt(5));
 
-        preview();
+        preview(); //
 
         //export("pdf");    // use this when generating images for poster
         export("png");
@@ -109,7 +109,7 @@ public class HeadlessSimple {
     }
 
 
-    private void importData(String filepath) {
+    private void importData(String filepath) { // TODO: Merge duplicate edges at minimum weight
 
         //Import file
         Container container;
@@ -228,7 +228,8 @@ public class HeadlessSimple {
         }
     }
 
-    private void color(int option) {  // TODO: Add more coloring methods
+    private void color(int option) {  // TODO: Make a custom palette generator?
+                                        // TODO: Color scales of 2-4 colors rather than just 2
         Color color1, color2;
 
         if(rand.nextInt(8)==1){ // Chance to choose grayscale
@@ -279,7 +280,7 @@ public class HeadlessSimple {
                 appearanceController.transform(pageRankRanking);
                 break;
             }
-            default: { // Rank color by degree
+            case 4: { // Rank color by degree
                 System.out.println("Color: Degree");
                 Function degreeRanking = appearanceModel.getNodeFunction(graph, AppearanceModel.GraphFunction.NODE_DEGREE, RankingElementColorTransformer.class);
                 RankingElementColorTransformer degreeTransformer = degreeRanking.getTransformer();
@@ -288,23 +289,79 @@ public class HeadlessSimple {
                 appearanceController.transform(degreeRanking);
                 break;
             }
+            default: {
+                System.out.println("Color: Modularity Class");
+                Modularity modularity = new Modularity();
+                modularity.setUseWeight(Boolean.FALSE);
+                modularity.setRandom(Boolean.TRUE);
+                modularity.setResolution(5.0);
+                modularity.execute(graphModel);
+                Column modColumn = graphModel.getNodeTable().getColumn(Modularity.MODULARITY_CLASS);
+                Function func2 = appearanceModel.getNodeFunction(graph, modColumn, PartitionElementColorTransformer.class);
+                Partition partition2 = ((PartitionFunction) func2).getPartition();
+                Palette palette2 = PaletteManager.getInstance().randomPalette(partition2.size());
+                partition2.setColors(palette2.getColors());
+                appearanceController.transform(func2);
+            }
         }
     }
 
-    private void size(int option) {   // TODO: Add more sizing functions (including NONE)
+    private void size(int option) {
 
-        //Get Centrality
-        GraphDistance distance = new GraphDistance();
-        distance.setDirected(false);
-        distance.execute(graphModel);
+        int minSize = rand.nextInt(2) + 1;
+        int maxSize = rand.nextInt(12) + 8;
 
-        //Rank size by centrality
-        Column centralityColumn = graphModel.getNodeTable().getColumn(GraphDistance.BETWEENNESS);
-        Function centralityRanking = appearanceModel.getNodeFunction(graph, centralityColumn, RankingNodeSizeTransformer.class);
-        RankingNodeSizeTransformer centralityTransformer = centralityRanking.getTransformer();
-        centralityTransformer.setMinSize(3);
-        centralityTransformer.setMaxSize(10);
-        appearanceController.transform(centralityRanking);
+        switch(option) {
+            case 1: { // Rank size by Eigenvector Centrality
+                System.out.println("Size: Eigenvector Centrality");
+                EigenvectorCentrality eigen = new EigenvectorCentrality();
+                eigen.execute(graphModel);
+                Column eigenColumn = graphModel.getNodeTable().getColumn(EigenvectorCentrality.EIGENVECTOR);
+                Function eigenRanking = appearanceModel.getNodeFunction(graph, eigenColumn, RankingNodeSizeTransformer.class);
+                RankingNodeSizeTransformer eigenTransformer = eigenRanking.getTransformer();
+                eigenTransformer.setMinSize(minSize);
+                eigenTransformer.setMaxSize(maxSize);
+                appearanceController.transform(eigenRanking);
+                break;
+            }
+            case 2: { // Rank size by Centrality
+                System.out.println("Size: Centrality");
+                GraphDistance distance = new GraphDistance();
+                distance.setDirected(false);
+                distance.execute(graphModel);
+                Column centralityColumn = graphModel.getNodeTable().getColumn(GraphDistance.BETWEENNESS);
+                Function centralityRanking = appearanceModel.getNodeFunction(graph, centralityColumn, RankingNodeSizeTransformer.class);
+                RankingNodeSizeTransformer centralityTransformer = centralityRanking.getTransformer();
+                centralityTransformer.setMinSize(minSize);
+                centralityTransformer.setMaxSize(maxSize);
+                appearanceController.transform(centralityRanking);
+                break;
+            }
+            case 3: { // Rank size by PageRank
+                System.out.println("Size: PageRank");
+                PageRank pageRank = new PageRank();
+                pageRank.execute(graphModel);
+                Column pageRankColumn = graphModel.getNodeTable().getColumn(PageRank.PAGERANK);
+                Function pageRankRanking = appearanceModel.getNodeFunction(graph, pageRankColumn, RankingNodeSizeTransformer.class);
+                RankingNodeSizeTransformer pageRankTransformer = pageRankRanking.getTransformer();
+                pageRankTransformer.setMinSize(minSize);
+                pageRankTransformer.setMaxSize(maxSize);
+                appearanceController.transform(pageRankRanking);
+                break;
+            }
+            case 4: { // Rank size by degree
+                System.out.println("Size: Degree");
+                Function degreeRanking = appearanceModel.getNodeFunction(graph, AppearanceModel.GraphFunction.NODE_DEGREE, RankingNodeSizeTransformer.class);
+                RankingNodeSizeTransformer degreeTransformer = degreeRanking.getTransformer();
+                degreeTransformer.setMinSize(minSize);
+                degreeTransformer.setMaxSize(maxSize);
+                appearanceController.transform(degreeRanking);
+                break;
+            }
+            default: {
+                System.out.println("No Size Ranking");
+            }
+        }
     }
 
     private void preview() {
