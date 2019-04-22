@@ -41,15 +41,18 @@ import org.openide.util.Lookup;                     // TODO: Replace this since 
 
 public class HeadlessSimple {
 
-    private String[] datasets = {"data/brunduart.graphml", // TODO: Data cleanup (remove unused data, make anonymous)
-            "data/emma.thole.3.graphml",
-            "data/emma.thole.600.graphml",
-            "data/emma.thole.1000.graphml",
+    private String[] datasets = {"data/brunduart.graphml", // TODO: Data cleanup (remove unused data, make anonymous?)
+            "data/emma3.graphml",
+            "data/emma600.graphml",
+            "data/emma1000.graphml",
+            "data/erin.graphml",
             "data/fabruxo.graphml",
             "data/flamespinner.graphml",
             "data/flamespinner1.graphml",
             "data/hermanomarcosm.graphml",
+            "data/jordan.harris.1997 (5).graphml",
             "data/lostcirclenielsmain.graphml",
+            "data/malcolm.stuart.319.graphml",
             "data/rodrigo.graphml",
             "data/ruan.felipe.5686.graphml",
             "data/ruan.felipe.5686_1.graphml",
@@ -74,7 +77,7 @@ public class HeadlessSimple {
         setup();
 
         importData(datasets[rand.nextInt(datasets.length)]);
-        //importData(datasets[10]);
+        //importData(datasets[4]);
 
         filter();
 
@@ -376,6 +379,7 @@ public class HeadlessSimple {
         // node opacity
         int r = rand.nextInt(10);
         if(r == 1) { // invisible nodes
+            System.out.println("Invisible Nodes");
             model.getProperties().putValue(PreviewProperty.NODE_OPACITY, 0.01);
             model.getProperties().putValue(PreviewProperty.EDGE_OPACITY, rand.nextFloat()*100);
             model.getProperties().putValue(PreviewProperty.EDGE_THICKNESS, rand.nextFloat()*14.9+.1f);
