@@ -1,7 +1,9 @@
 import java.awt.Color;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Random;
+import java.util.Scanner;
 
 import org.gephi.appearance.api.*;
 import org.gephi.appearance.plugin.PartitionElementColorTransformer;
@@ -70,29 +72,128 @@ public class HeadlessSimple {
     private AppearanceController appearanceController;
     private AppearanceModel appearanceModel;
 
-    public void script() {
+    public String script() {
 
         rand = new Random();
+
+        // get randoms (make this a separate function once recommender is up)
+
+        int options[] = new int[0];
+        try {
+            options = getOptions();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
 
         setup();
 
         importData(datasets[rand.nextInt(datasets.length)]);
-        //importData(datasets[14]);
 
         filter();
 
-        layout(rand.nextInt(4));
-        //layout(3);
+        layout(options[0]);
 
-        color(rand.nextInt(5));
-        //color(0);
+        color(options[1]);
 
-        size(rand.nextInt(5));
+        size(options[2]);
 
-        preview(); //
+        preview(options[3], options[4], options[5]);
 
-        //export("pdf");    // use this when generating images for poster
-        export("png");
+        export("png"); // can also be "pdf"
+
+        return (String.valueOf(options[0]) + ' ' + options[1] + ' ' + options[2] + ' ' + options[3] + ' ' + options[4] + ' ' + options[5]);
+    }
+
+    private int[] getOptions() throws FileNotFoundException {
+        int options[] = new int [6];
+        int next;
+
+        // without using twitter likes
+        //options[0] = rand.nextInt(5);
+        //options[1] = rand.nextInt(5);
+        //options[2] = rand.nextInt(5);
+        //options[3] = rand.nextInt(2);
+        //options[4] = rand.nextInt(4);
+        //options[5] = rand.nextInt(3);
+
+        // with twitter likes
+        int likes[] = new int[24];
+
+        File file = new File("likes.txt");
+
+        Scanner s = new Scanner(file);
+
+        for (int i = 0; i < 24; i++) {
+            likes[i] = Integer.parseInt(s.next());
+        }
+
+        next = rand.nextInt(likes[0] + likes[1] + likes[2] + likes[3] + likes[4]);
+        if (next < likes[0]) {
+            options[0] = 0;
+        } else if (next < likes[0] + likes[1]) {
+            options[0] = 1;
+        } else if (next < likes[0] + likes[1] + likes[2]) {
+            options[0] = 2;
+        } else if (next < likes[0] + likes[1] + likes[2] + likes[3]) {
+            options[0] = 3;
+        } else {
+            options[0] = 4;
+        }
+
+        next = rand.nextInt(likes[5] + likes[6] + likes[7] + likes[8] + likes[9]);
+        if (next < likes[5]) {
+            options[1] = 0;
+        } else if (next < likes[5] + likes[6]) {
+            options[1] = 1;
+        } else if (next < likes[5] + likes[6] + likes[7]) {
+            options[1] = 2;
+        } else if (next < likes[5] + likes[6] + likes[7] + likes[8]) {
+            options[1] = 3;
+        } else {
+            options[1] = 4;
+        }
+
+        next = rand.nextInt(likes[10] + likes[11] + likes[12] + likes[13] + likes[14]);
+        if (next < likes[10]) {
+            options[2] = 0;
+        } else if (next < likes[10] + likes[11]) {
+            options[2] = 1;
+        } else if (next < likes[10] + likes[11] + likes[12]) {
+            options[2] = 2;
+        } else if (next < likes[10] + likes[11] + likes[12] + likes[13]) {
+            options[2] = 3;
+        } else {
+            options[2] = 4;
+        }
+
+        next = rand.nextInt(likes[15] + likes[16]);
+        if (next < likes[15]) {
+            options[3] = 0;
+        } else {
+            options[3] = 1;
+        }
+
+        next = rand.nextInt(likes[17] + likes[18] + likes[19] + likes[20]);
+        if (next < likes[17]) {
+            options[4] = 0;
+        } else if (next < likes[17] + likes[18]) {
+            options[4] = 1;
+        } else if (next < likes[17] + likes[18] + likes[19]) {
+            options[4] = 2;
+        } else {
+            options[4] = 3;
+        }
+
+        next = rand.nextInt(likes[21] + likes[22] + likes[23]);
+        if (next < likes[21]) {
+            options[5] = 0;
+        } else if (next < likes[21] + likes[22]) {
+            options[5] = 1;
+        } else {
+            options[5] = 2;
+        }
+
+        return options;
     }
 
     private void setup() {
@@ -131,8 +232,10 @@ public class HeadlessSimple {
 
         //See if graph is well imported
         graph = graphModel.getUndirectedGraph();
-        System.out.println("Nodes: " + graph.getNodeCount());
-        System.out.println("Edges: " + graph.getEdgeCount());
+        //System.out.println("Nodes: " + graph.getNodeCount());
+        //System.out.println("Edges: " + graph.getEdgeCount());
+
+        System.out.println("Data imported");
     }
 
     private void filter() {
@@ -147,8 +250,10 @@ public class HeadlessSimple {
 
         //See visible graph stats
         UndirectedGraph graphVisible = graphModel.getUndirectedGraphVisible();
-        System.out.println("Nodes: " + graphVisible.getNodeCount());
-        System.out.println("Edges: " + graphVisible.getEdgeCount());
+        //System.out.println("Nodes: " + graphVisible.getNodeCount());
+        //System.out.println("Edges: " + graphVisible.getEdgeCount());
+
+        System.out.println("Data filtered");
     }
 
 
@@ -158,7 +263,7 @@ public class HeadlessSimple {
 
         switch (option) {
             case 1: // ForceAtlas
-                System.out.println("Layout: ForceAtlas");
+                //System.out.println("Layout: ForceAtlas");
                 ForceAtlasLayout forceAtlas = new ForceAtlasLayout(null);
                 forceAtlas.setGraphModel(graphModel);
                 forceAtlas.resetPropertiesValues();
@@ -170,7 +275,7 @@ public class HeadlessSimple {
                 forceAtlas.endAlgo();
                 break;
             case 2: //ForceAtlas2
-                System.out.println("Layout: ForceAtlas2");
+                //System.out.println("Layout: ForceAtlas2");
                 ForceAtlas2 forceAtlas2 = new ForceAtlas2(null);
                 forceAtlas2.setGraphModel(graphModel);
                 forceAtlas2.resetPropertiesValues();
@@ -184,24 +289,7 @@ public class HeadlessSimple {
                 forceAtlas2.endAlgo();
                 break;
             case 3: // Fruchterman Reingold
-
-                // First, maybe do a quick ForceAtlas2
-                if(rand.nextInt(5)>1) {
-                    System.out.println("Layout: ForceAtlas2 + Fruchterman Reingold");
-                    ForceAtlas2 prefruchterman = new ForceAtlas2(null);
-                    prefruchterman.setGraphModel(graphModel);
-                    prefruchterman.resetPropertiesValues();
-                    prefruchterman.setStrongGravityMode(Boolean.TRUE);
-                    prefruchterman.setGravity(0.2);
-
-                    prefruchterman.initAlgo();
-                    for (int i = 0; i < 100 && prefruchterman.canAlgo(); i++) {
-                        prefruchterman.goAlgo();
-                    }
-                    prefruchterman.endAlgo();
-                } else {
-                    System.out.println("Layout: Fruchterman Reingold");
-                }
+                //System.out.println("Layout: Fruchterman Reingold");
 
                 FruchtermanReingold fruchterman = new FruchtermanReingold(null);
                 fruchterman.setGraphModel(graphModel);
@@ -215,8 +303,35 @@ public class HeadlessSimple {
                 }
                 fruchterman.endAlgo();
                 break;
+            case 4:
+                //System.out.println("Layout: ForceAtlas2 + Fruchterman Reingold");
+                ForceAtlas2 prefruchterman = new ForceAtlas2(null);
+                prefruchterman.setGraphModel(graphModel);
+                prefruchterman.resetPropertiesValues();
+                prefruchterman.setStrongGravityMode(Boolean.TRUE);
+                prefruchterman.setGravity(0.2);
+
+                prefruchterman.initAlgo();
+                for (int i = 0; i < 100 && prefruchterman.canAlgo(); i++) {
+                    prefruchterman.goAlgo();
+                }
+                prefruchterman.endAlgo();
+
+
+                FruchtermanReingold fruchterman2 = new FruchtermanReingold(null);
+                fruchterman2.setGraphModel(graphModel);
+                fruchterman2.resetPropertiesValues();
+                fruchterman2.setGravity(100.0);
+                fruchterman2.setSpeed(10.0);
+
+                fruchterman2.initAlgo();
+                for (int i = 0; i < iters && fruchterman2.canAlgo(); i++) {
+                    fruchterman2.goAlgo();
+                }
+                fruchterman2.endAlgo();
+                break;
             default: // Yifan Hu
-                System.out.println("Layout: Yifan Hu");
+                //System.out.println("Layout: Yifan Hu");
                 YifanHuLayout layout = new YifanHuLayout(null, new StepDisplacement(1f));
                 layout.setGraphModel(graphModel);
                 layout.resetPropertiesValues();
@@ -229,10 +344,12 @@ public class HeadlessSimple {
                 layout.endAlgo();
                 break;
         }
+
+        System.out.println("Layout complete");
     }
 
     private void color(int option) {  // TODO: Make a custom palette generator?
-                                        // TODO: Color scales of 2-4 colors rather than just 2
+                                      // TODO: Color scales of 2-4 colors rather than just 2
         Color color1, color2;
 
         if(rand.nextInt(8)==1){ // Chance to choose grayscale
@@ -247,7 +364,7 @@ public class HeadlessSimple {
 
         switch(option) {
             case 1: { // Rank color by Eigenvector Centrality
-                System.out.println("Color: Eigenvector Centrality");
+                //System.out.println("Color: Eigenvector Centrality");
                 EigenvectorCentrality eigen = new EigenvectorCentrality();
                 eigen.execute(graphModel);
                 Column eigenColumn = graphModel.getNodeTable().getColumn(EigenvectorCentrality.EIGENVECTOR);
@@ -259,7 +376,7 @@ public class HeadlessSimple {
                 break;
             }
             case 2: { // Rank color by Centrality
-                System.out.println("Color: Centrality");
+                //System.out.println("Color: Centrality");
                 GraphDistance distance = new GraphDistance();
                 distance.setDirected(false);
                 distance.execute(graphModel);
@@ -272,7 +389,7 @@ public class HeadlessSimple {
                 break;
             }
             case 3: { // Rank color by PageRank
-                System.out.println("Color: PageRank");
+                //System.out.println("Color: PageRank");
                 PageRank pageRank = new PageRank();
                 pageRank.execute(graphModel);
                 Column pageRankColumn = graphModel.getNodeTable().getColumn(PageRank.PAGERANK);
@@ -284,7 +401,7 @@ public class HeadlessSimple {
                 break;
             }
             case 4: { // Rank color by degree
-                System.out.println("Color: Degree");
+                //System.out.println("Color: Degree");
                 Function degreeRanking = appearanceModel.getNodeFunction(graph, AppearanceModel.GraphFunction.NODE_DEGREE, RankingElementColorTransformer.class);
                 RankingElementColorTransformer degreeTransformer = degreeRanking.getTransformer();
                 degreeTransformer.setColors(new Color[]{ color1, color2});
@@ -293,7 +410,7 @@ public class HeadlessSimple {
                 break;
             }
             default: {
-                System.out.println("Color: Modularity Class");
+                //System.out.println("Color: Modularity Class");
                 Modularity modularity = new Modularity();
                 modularity.setUseWeight(Boolean.FALSE);
                 modularity.setRandom(Boolean.TRUE);
@@ -307,6 +424,8 @@ public class HeadlessSimple {
                 appearanceController.transform(func2);
             }
         }
+
+        System.out.println("Color transform complete");
     }
 
     private void size(int option) {
@@ -316,7 +435,7 @@ public class HeadlessSimple {
 
         switch(option) {
             case 1: { // Rank size by Eigenvector Centrality
-                System.out.println("Size: Eigenvector Centrality");
+                //System.out.println("Size: Eigenvector Centrality");
                 EigenvectorCentrality eigen = new EigenvectorCentrality();
                 eigen.execute(graphModel);
                 Column eigenColumn = graphModel.getNodeTable().getColumn(EigenvectorCentrality.EIGENVECTOR);
@@ -328,7 +447,7 @@ public class HeadlessSimple {
                 break;
             }
             case 2: { // Rank size by Centrality
-                System.out.println("Size: Centrality");
+                //System.out.println("Size: Centrality");
                 GraphDistance distance = new GraphDistance();
                 distance.setDirected(false);
                 distance.execute(graphModel);
@@ -341,7 +460,7 @@ public class HeadlessSimple {
                 break;
             }
             case 3: { // Rank size by PageRank
-                System.out.println("Size: PageRank");
+                //System.out.println("Size: PageRank");
                 PageRank pageRank = new PageRank();
                 pageRank.execute(graphModel);
                 Column pageRankColumn = graphModel.getNodeTable().getColumn(PageRank.PAGERANK);
@@ -353,7 +472,7 @@ public class HeadlessSimple {
                 break;
             }
             case 4: { // Rank size by degree
-                System.out.println("Size: Degree");
+                //System.out.println("Size: Degree");
                 Function degreeRanking = appearanceModel.getNodeFunction(graph, AppearanceModel.GraphFunction.NODE_DEGREE, RankingNodeSizeTransformer.class);
                 RankingNodeSizeTransformer degreeTransformer = degreeRanking.getTransformer();
                 degreeTransformer.setMinSize(minSize);
@@ -362,48 +481,67 @@ public class HeadlessSimple {
                 break;
             }
             default: {
-                System.out.println("No Size Ranking");
+                //System.out.println("No Size Ranking");
+                break;
             }
         }
+
+        System.out.println("Size transform complete");
     }
 
-    private void preview() {
+    private void preview(int option1, int option2, int option3) {
 
         model.getProperties().putValue(PreviewProperty.SHOW_NODE_LABELS, Boolean.FALSE);
         model.getProperties().putValue(PreviewProperty.EDGE_COLOR, new EdgeColor(EdgeColor.Mode.MIXED));
         model.getProperties().putValue(PreviewProperty.NODE_BORDER_WIDTH, 0);
 
-        // curved / straight edges
-        model.getProperties().putValue(PreviewProperty.EDGE_CURVED, rand.nextBoolean());
+        // curved / straight edges (this is being done in a really dumb way for consistency
 
-        // node opacity
-        int r = rand.nextInt(10);
-        if(r == 1) { // invisible nodes
-            System.out.println("Invisible Nodes");
-            model.getProperties().putValue(PreviewProperty.NODE_OPACITY, 0.01);
-            model.getProperties().putValue(PreviewProperty.EDGE_OPACITY, rand.nextFloat()*100);
-            model.getProperties().putValue(PreviewProperty.EDGE_THICKNESS, rand.nextFloat()*14.9+.1f);
-        } else if (r < 4) { // random node/edge opacity
-            model.getProperties().putValue(PreviewProperty.NODE_OPACITY, rand.nextFloat()*100);
-            model.getProperties().putValue(PreviewProperty.EDGE_OPACITY, rand.nextFloat()*100);
-            model.getProperties().putValue(PreviewProperty.EDGE_THICKNESS, rand.nextFloat()*0.9+.1f);
-        } else if (r < 8) { // normal nodes, random edge opacity
-            model.getProperties().putValue(PreviewProperty.EDGE_OPACITY, rand.nextFloat()*90 + 10);
-            model.getProperties().putValue(PreviewProperty.EDGE_THICKNESS, rand.nextFloat()*0.9+.1f);
-        } else { // normal nodes, normal edges
-            model.getProperties().putValue(PreviewProperty.EDGE_THICKNESS, rand.nextFloat()*0.9+.1f);
+        switch(option1) {
+            case 1:
+                model.getProperties().putValue(PreviewProperty.EDGE_CURVED, true);
+                break;
+            default:
+                model.getProperties().putValue(PreviewProperty.EDGE_CURVED, false);
+                break;
+        }
+
+        // node/edge visibility
+        switch(option2) {
+            case 1:
+                model.getProperties().putValue(PreviewProperty.NODE_OPACITY, 0.01);
+                model.getProperties().putValue(PreviewProperty.EDGE_OPACITY, rand.nextFloat()*100);
+                model.getProperties().putValue(PreviewProperty.EDGE_THICKNESS, rand.nextFloat()*14.9+.1f);
+                break;
+            case 2:
+                model.getProperties().putValue(PreviewProperty.NODE_OPACITY, rand.nextFloat()*100);
+                model.getProperties().putValue(PreviewProperty.EDGE_OPACITY, rand.nextFloat()*100);
+                model.getProperties().putValue(PreviewProperty.EDGE_THICKNESS, rand.nextFloat()*0.9+.1f);
+                break;
+            case 3:
+                model.getProperties().putValue(PreviewProperty.EDGE_OPACITY, rand.nextFloat()*90 + 10);
+                model.getProperties().putValue(PreviewProperty.EDGE_THICKNESS, rand.nextFloat()*0.9+.1f);
+                break;
+            default:
+                model.getProperties().putValue(PreviewProperty.EDGE_THICKNESS, rand.nextFloat()*0.9+.1f);
+                break;
         }
 
         // background color
-        r = rand.nextInt(10);
-        if(r == 1) {
-            Color c = new Color(rand.nextInt(255), rand.nextInt(255), rand.nextInt(255));
-            model.getProperties().putValue(PreviewProperty.BACKGROUND_COLOR, c);
-        } else if(r == 2) {
-            model.getProperties().putValue(PreviewProperty.BACKGROUND_COLOR, Color.WHITE);
-        } else {
-            model.getProperties().putValue(PreviewProperty.BACKGROUND_COLOR, Color.BLACK);
+        switch(option3) {
+            case 1:
+                model.getProperties().putValue(PreviewProperty.BACKGROUND_COLOR, Color.BLACK);
+                break;
+            case 2:
+                model.getProperties().putValue(PreviewProperty.BACKGROUND_COLOR, Color.WHITE);
+                break;
+            default:
+                Color c = new Color(rand.nextInt(255), rand.nextInt(255), rand.nextInt(255));
+                model.getProperties().putValue(PreviewProperty.BACKGROUND_COLOR, c);
+                break;
         }
+
+        System.out.println("Exporting...");
     }
 
     private void export(String exportType) {
