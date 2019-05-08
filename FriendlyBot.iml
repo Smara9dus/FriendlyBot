@@ -9,5 +9,6 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="org.gephi:gephi-toolkit:0.9.1" level="project" />
     <orderEntry type="library" name="com.restfb:restfb:2.19.0" level="project" />
+    <orderEntry type="library" name="org.twitter4j:twitter4j-core:4.0.3" level="project" />
   </component>
 </module>
