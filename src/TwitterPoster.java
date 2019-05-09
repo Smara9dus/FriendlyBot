@@ -9,14 +9,10 @@ import java.util.Scanner;
 
 public class TwitterPoster {
 
-//    static String consumerKey = "XXXXXXX";
-//    static String consumerKeySecret = "XXXXXXXXXX";
-//    static String accessToken = "XXXXXXXXXXX";
-//    static String accessTokenSecret = "XXXXXXXXXXX";
-    static String consumerKey = "baE5z2254B03W2Q3DCE8tMr8o";
-    static String consumerKeySecret = "g4dGIDxhar11zTUL7lhPuiRXJQt4Tuj6L8wy21sNNUyC9m9yov";
-    static String accessToken = "1121089235191250944-d04mL1VxeDRaVVDh9iYowlWuczbWlE";
-    static String accessTokenSecret = "mxcKtHR0fKwQECln8WHejy7AB35QtzIvT78VGsvY82nFV";
+    static String consumerKey = "XXXXXXX";
+    static String consumerKeySecret = "XXXXXXXXXX";
+    static String accessToken = "XXXXXXXXXXX";
+    static String accessTokenSecret = "XXXXXXXXXXX";
 
 
     // Get likes from previous tweet
