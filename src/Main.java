@@ -8,8 +8,7 @@ public class Main {
         HeadlessSimple headlessSimple = new HeadlessSimple();
 
         // First get the previous tweet and add its likes into likes.txt
-        // tp.getLikes();
-//        tp.configBuilder();
+         tp.getLikes();
 
         // Generate image as "recent.png"
 
